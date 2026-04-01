@@ -27,6 +27,7 @@ coverage/
 # Environment files
 .env
 .env.*
+!.env.example
 
 # Supabase local state
 supabase/.temp/

@@ -23,15 +23,16 @@ export function BackendSetupCard() {
   return (
     <section className={styles.setupCard}>
       <p className={styles.kicker}>Backend setup required</p>
-      <h1>The app shell is ready, but this Supabase project is missing the ledger schema.</h1>
+      <h1>The app shell is ready, but this deployment still needs its Supabase connection and ledger backend.</h1>
       <p>
-        Apply the migrations in <code className={styles.inlineCode}>supabase/migrations</code> so the
-        dashboard can read tables, reporting views, RPCs, and security policies.
+        Add the required Supabase environment variables, then apply the migrations in{" "}
+        <code className={styles.inlineCode}>supabase/migrations</code> so the dashboard can read
+        tables, reporting views, RPCs, and security policies.
       </p>
       <div className={styles.helperList}>
-        <span>Creates the vendor, item, channel, and ledger tables</span>
-        <span>Enables the reporting views that power reconciliation and profit snapshots</span>
-        <span>Turns on the policies and RPCs used by the forms on this page</span>
+        <span>Add `NEXT_PUBLIC_SUPABASE_URL` plus a publishable key in the deployment environment</span>
+        <span>Apply the migrations that create the vendor, item, channel, and ledger tables</span>
+        <span>Redeploy so auth refresh, reporting views, policies, and RPCs are all available</span>
       </div>
     </section>
   );

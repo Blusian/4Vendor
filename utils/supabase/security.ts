@@ -7,6 +7,12 @@ export type SupabaseConfig = {
   url: string;
 };
 
+export type SupabaseConfigStatus = {
+  configured: boolean;
+  error: string | null;
+  missing: string[];
+};
+
 function readRequiredEnv(name: string) {
   const value = process.env[name]?.trim();
 
@@ -27,11 +33,61 @@ function normalizeSupabaseUrl(rawUrl: string) {
   return parsed.origin;
 }
 
+function readConfiguredPublishableKey() {
+  return (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY?.trim() ??
+    ""
+  );
+}
+
+export function getSupabaseConfigStatus(): SupabaseConfigStatus {
+  const missing: string[] = [];
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
+  const key = readConfiguredPublishableKey();
+
+  if (!url) {
+    missing.push(SUPABASE_URL_ENV);
+  }
+
+  if (!key) {
+    missing.push(`${SUPABASE_KEY_ENV} or ${SUPABASE_FALLBACK_KEY_ENV}`);
+  }
+
+  try {
+    if (url) {
+      normalizeSupabaseUrl(url);
+    }
+  } catch (error) {
+    return {
+      configured: false,
+      error: error instanceof Error ? error.message : "[security] Supabase configuration is invalid.",
+      missing,
+    };
+  }
+
+  if (missing.length) {
+    return {
+      configured: false,
+      error: `[security] Missing required environment variable: ${missing.join(", ")}`,
+      missing,
+    };
+  }
+
+  return {
+    configured: true,
+    error: null,
+    missing,
+  };
+}
+
+export function isSupabaseConfigured() {
+  return getSupabaseConfigStatus().configured;
+}
+
 export function getSupabaseConfig(): SupabaseConfig {
   const url = normalizeSupabaseUrl(readRequiredEnv(SUPABASE_URL_ENV));
-  const key =
-    process.env[SUPABASE_KEY_ENV]?.trim() ??
-    process.env[SUPABASE_FALLBACK_KEY_ENV]?.trim();
+  const key = readConfiguredPublishableKey();
 
   if (!key) {
     throw new Error(
@@ -45,9 +101,7 @@ export function getSupabaseConfig(): SupabaseConfig {
 export function getSupabaseBrowserConfig(): SupabaseConfig {
   const urlValue = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const url = urlValue ? normalizeSupabaseUrl(urlValue) : "";
-  const key =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY?.trim();
+  const key = readConfiguredPublishableKey();
 
   if (!url) {
     throw new Error(

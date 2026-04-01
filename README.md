@@ -27,6 +27,19 @@ npm run dev
 
 Then open `http://localhost:3000`.
 
+## Environment variables
+
+Copy `.env.example` to `.env.local` and provide:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+If you prefer, you can supply `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` instead of
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+
+Vercel deployments need the same variables in Project Settings -> Environment Variables before the
+login flow and protected dashboard routes can connect to Supabase.
+
 ## Notes
 
 - The page was designed to feel bright, bubbly, modern, and trustworthy rather than dark or finance-coded.

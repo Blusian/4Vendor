@@ -4,12 +4,19 @@ import { type NextRequest, NextResponse } from "next/server";
 import type { Database } from "@/utils/supabase/database.types";
 import { getSupabaseConfig } from "@/utils/supabase/security";
 
-const { url: supabaseUrl, key: supabaseKey } = getSupabaseConfig();
-
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request,
   });
+
+  let supabaseUrl = "";
+  let supabaseKey = "";
+
+  try {
+    ({ url: supabaseUrl, key: supabaseKey } = getSupabaseConfig());
+  } catch {
+    return response;
+  }
 
   const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {

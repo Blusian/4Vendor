@@ -4,9 +4,8 @@ import { cookies } from "next/headers";
 import type { Database } from "@/utils/supabase/database.types";
 import { getSupabaseConfig } from "@/utils/supabase/security";
 
-const { url: supabaseUrl, key: supabaseKey } = getSupabaseConfig();
-
 export async function createClient() {
+  const { url: supabaseUrl, key: supabaseKey } = getSupabaseConfig();
   const cookieStore = await cookies();
 
   return createServerClient<Database>(supabaseUrl, supabaseKey, {

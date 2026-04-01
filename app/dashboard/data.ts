@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import type { Database, Json } from "@/utils/supabase/database.types";
 import { createClient } from "@/utils/supabase/server";
+import { isSupabaseConfigured } from "@/utils/supabase/security";
 
 import { dashboardNotices, type DashboardNoticeCode } from "./notices";
 
@@ -135,6 +136,38 @@ function parseItemMarketMetadata(metadata: Json) {
   };
 }
 
+function createEmptyDashboardData() {
+  return {
+    alerts: [],
+    auditEvents: [],
+    backendMissing: true,
+    channels: [],
+    expectedCash: 0,
+    inventory: [],
+    inventoryByItemId: new Map<string, never>(),
+    items: [],
+    lowStockCount: 0,
+    marketComparisonMissing: true,
+    marketComparisons: [],
+    overview: {
+      fees: 0,
+      profit: 0,
+      revenue: 0,
+      taxes: 0,
+      transactions: 0,
+    },
+    reconciliation: [],
+    reversibleTransactions: [],
+    snapshots: [],
+    supabase: null,
+    totalOnHand: 0,
+    transactions: [],
+    user: null,
+    vendor: null,
+    workspaceName: "My Card Shop",
+  };
+}
+
 export async function getDashboardIdentity() {
   const supabase = await createClient();
   const {
@@ -174,6 +207,10 @@ export async function loadDashboardData(
     transactionLimit?: number;
   },
 ) {
+  if (!isSupabaseConfigured()) {
+    return createEmptyDashboardData();
+  }
+
   const { supabase, user, vendor, vendorError, workspaceName } = await getDashboardIdentity();
   const itemLimit = options?.itemLimit ?? 24;
   const inventoryLimit = options?.inventoryLimit ?? 16;

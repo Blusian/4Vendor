@@ -10,7 +10,9 @@ import styles from "./login.module.css";
 type AuthMode = "signin" | "signup";
 
 type LoginFormProps = {
+  authConfigured: boolean;
   initialStatus: string | null;
+  missingVariables: string[];
 };
 
 function getSafeNext(nextParam: string | null) {
@@ -39,13 +41,21 @@ function isEmailConfirmationError(message: string) {
   );
 }
 
-export function LoginForm({ initialStatus }: LoginFormProps) {
+export function LoginForm({
+  authConfigured,
+  initialStatus,
+  missingVariables,
+}: LoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const missingVariablesText = missingVariables.length ? missingVariables.join(" and ") : "the required Supabase environment variables";
+  const backendUnavailableMessage = `This deployment is missing ${missingVariablesText}. Add them in Vercel Project Settings, then redeploy before using sign-in.`;
   const [mode, setMode] = useState<AuthMode>("signin");
   const [emailAddress, setEmailAddress] = useState("");
   const [errorMessage, setErrorMessage] = useState(
-    initialStatus === "confirm_failed"
+    !authConfigured || initialStatus === "backend_unavailable"
+      ? backendUnavailableMessage
+      : initialStatus === "confirm_failed"
       ? "We could not confirm that email link. Request a fresh signup link or sign in if you already confirmed the account."
       : "",
   );
@@ -56,6 +66,12 @@ export function LoginForm({ initialStatus }: LoginFormProps) {
   const nextPath = getSafeNext(searchParams.get("next"));
 
   const handleResendConfirmation = async () => {
+    if (!authConfigured) {
+      setErrorMessage(backendUnavailableMessage);
+      setNeedsConfirmation(false);
+      return;
+    }
+
     const email = emailAddress.trim();
 
     if (!email) {
@@ -96,6 +112,12 @@ export function LoginForm({ initialStatus }: LoginFormProps) {
   };
 
   const handleSubmit = async (formData: FormData) => {
+    if (!authConfigured) {
+      setErrorMessage(backendUnavailableMessage);
+      setNeedsConfirmation(false);
+      return;
+    }
+
     const emailValue = formData.get("email");
     const passwordValue = formData.get("password");
     const businessNameValue = formData.get("business_name");
@@ -181,6 +203,7 @@ export function LoginForm({ initialStatus }: LoginFormProps) {
           className={mode === "signin" ? styles.modeButtonActive : styles.modeButton}
           type="button"
           onClick={() => setMode("signin")}
+          disabled={!authConfigured}
         >
           Sign in
         </button>
@@ -188,6 +211,7 @@ export function LoginForm({ initialStatus }: LoginFormProps) {
           className={mode === "signup" ? styles.modeButtonActive : styles.modeButton}
           type="button"
           onClick={() => setMode("signup")}
+          disabled={!authConfigured}
         >
           Create account
         </button>
@@ -208,6 +232,7 @@ export function LoginForm({ initialStatus }: LoginFormProps) {
             autoComplete="email"
             value={emailAddress}
             onChange={(event) => setEmailAddress(event.target.value)}
+            disabled={!authConfigured || isPending}
             required
           />
         </label>
@@ -220,6 +245,7 @@ export function LoginForm({ initialStatus }: LoginFormProps) {
             placeholder="At least 6 characters"
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             minLength={6}
+            disabled={!authConfigured || isPending}
             required
           />
         </label>
@@ -232,20 +258,32 @@ export function LoginForm({ initialStatus }: LoginFormProps) {
               type="text"
               placeholder="Andy's Card Table"
               autoComplete="organization"
+              disabled={!authConfigured || isPending}
             />
           </label>
         ) : null}
 
-        <button className={styles.submitButton} type="submit" disabled={isPending}>
+        <button className={styles.submitButton} type="submit" disabled={isPending || !authConfigured}>
           {isPending ? "Working..." : mode === "signin" ? "Sign in" : "Create account"}
         </button>
       </form>
 
       {errorMessage ? <p className={styles.errorMessage}>{errorMessage}</p> : null}
       {successMessage ? <p className={styles.successMessage}>{successMessage}</p> : null}
+      {!authConfigured ? (
+        <p className={styles.helperText}>
+          Required for this deployment: {missingVariablesText}. Once those are present, the email
+          confirmation and password flows will work normally.
+        </p>
+      ) : null}
       {needsConfirmation ? (
         <div className={styles.supportActions}>
-          <button className={styles.secondaryButton} type="button" onClick={handleResendConfirmation} disabled={isPending}>
+          <button
+            className={styles.secondaryButton}
+            type="button"
+            onClick={handleResendConfirmation}
+            disabled={isPending || !authConfigured}
+          >
             {isPending ? "Sending..." : "Resend confirmation email"}
           </button>
           <p className={styles.helperText}>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/utils/supabase/server";
+import { getSupabaseConfigStatus } from "@/utils/supabase/security";
 
 import { LoginForm } from "./login-form";
 import styles from "./login.module.css";
@@ -17,14 +18,18 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ auth?: string }>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   const params = await searchParams;
+  const configStatus = getSupabaseConfigStatus();
 
-  if (user) {
-    redirect("/dashboard");
+  if (configStatus.configured) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      redirect("/dashboard");
+    }
   }
 
   return (
@@ -65,7 +70,11 @@ export default async function LoginPage({
                 immediately.
               </p>
             </div>
-            <LoginForm initialStatus={params.auth ?? null} />
+            <LoginForm
+              authConfigured={configStatus.configured}
+              initialStatus={params.auth ?? null}
+              missingVariables={configStatus.missing}
+            />
           </div>
         </section>
       </div>
