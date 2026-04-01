@@ -44,6 +44,16 @@ export const dashboardNotices = {
     title: "Catalog item created",
     tone: "success",
   },
+  "item-archived": {
+    description: "The item was removed from the active inventory list, but its ledger history is still preserved.",
+    title: "Item archived",
+    tone: "success",
+  },
+  "item-archive-error": {
+    description: "The item could not be removed from the active list. Try again in a moment.",
+    title: "Item not archived",
+    tone: "error",
+  },
   "item-error": {
     description: "The item could not be created. Review the catalog fields and try again.",
     title: "Item not created",
@@ -52,6 +62,21 @@ export const dashboardNotices = {
   "item-exists": {
     description: "That SKU already exists in this workspace. Choose a different SKU or edit the existing item later.",
     title: "SKU already exists",
+    tone: "error",
+  },
+  "item-has-stock": {
+    description: "That item still has on-hand or reserved quantity. Bring it to zero before removing it from the active list.",
+    title: "Item still has stock",
+    tone: "error",
+  },
+  "item-updated": {
+    description: "The item details were updated and the inventory list is refreshed.",
+    title: "Item saved",
+    tone: "success",
+  },
+  "item-update-error": {
+    description: "The item changes could not be saved. Review the fields and try again.",
+    title: "Item not saved",
     tone: "error",
   },
   "market-price-error": {

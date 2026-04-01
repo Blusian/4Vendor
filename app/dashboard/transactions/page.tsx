@@ -28,6 +28,7 @@ export default async function DashboardTransactionsPage({
   const params = await searchParams;
   const data = await loadDashboardData();
   const defaultOccurredAt = toDateTimeLocalValue();
+  const activeItems = data.items.filter((item) => item.is_active && item.current_status === "active");
 
   if (data.backendMissing) {
     return (
@@ -62,9 +63,9 @@ export default async function DashboardTransactionsPage({
               <div className={styles.formGrid}>
                 <label className={styles.field}>
                   <span>Item</span>
-                  <select name="item_id" disabled={!data.items.length} required>
-                    <option value="">{data.items.length ? "Select an item" : "Create an item first"}</option>
-                    {data.items.map((item) => (
+                  <select name="item_id" disabled={!activeItems.length} required>
+                    <option value="">{activeItems.length ? "Select an item" : "Create an active item first"}</option>
+                    {activeItems.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.name} / {item.sku}
                       </option>
@@ -73,15 +74,15 @@ export default async function DashboardTransactionsPage({
                 </label>
                 <label className={styles.field}>
                   <span>Quantity</span>
-                  <input name="quantity" type="number" step="1" min="0.001" placeholder="1" disabled={!data.items.length} required />
+                  <input name="quantity" type="number" step="1" min="0.001" placeholder="1" disabled={!activeItems.length} required />
                 </label>
                 <label className={styles.field}>
                   <span>Unit price ($)</span>
-                  <input name="unit_price" type="number" step="0.01" min="0" placeholder="44.00" disabled={!data.items.length} required />
+                  <input name="unit_price" type="number" step="0.01" min="0" placeholder="44.00" disabled={!activeItems.length} required />
                 </label>
                 <label className={styles.field}>
                   <span>Channel</span>
-                  <select name="channel_id" disabled={!data.items.length}>
+                  <select name="channel_id" disabled={!activeItems.length}>
                     <option value="">Direct / no channel</option>
                     {data.channels.map((channel) => (
                       <option key={channel.id} value={channel.id}>
@@ -92,22 +93,22 @@ export default async function DashboardTransactionsPage({
                 </label>
                 <label className={styles.field}>
                   <span>Date and time</span>
-                  <input name="occurred_at" type="datetime-local" defaultValue={defaultOccurredAt} disabled={!data.items.length} />
+                  <input name="occurred_at" type="datetime-local" defaultValue={defaultOccurredAt} disabled={!activeItems.length} />
                 </label>
                 <label className={styles.field}>
                   <span>Counterparty</span>
-                  <input name="counterparty_name" placeholder="Walk-up customer" disabled={!data.items.length} />
+                  <input name="counterparty_name" placeholder="Walk-up customer" disabled={!activeItems.length} />
                 </label>
                 <label className={styles.field}>
                   <span>Description</span>
-                  <input name="description" placeholder="Sale" disabled={!data.items.length} />
+                  <input name="description" placeholder="Sale" disabled={!activeItems.length} />
                 </label>
               </div>
               <label className={styles.field}>
                 <span>Notes</span>
-                <textarea name="notes" rows={3} placeholder="Optional customer or sale note." disabled={!data.items.length} />
+                <textarea name="notes" rows={3} placeholder="Optional customer or sale note." disabled={!activeItems.length} />
               </label>
-              <button className={styles.primaryButton} type="submit" disabled={!data.items.length}>
+              <button className={styles.primaryButton} type="submit" disabled={!activeItems.length}>
                 Record sale
               </button>
             </form>

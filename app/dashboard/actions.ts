@@ -146,6 +146,32 @@ function buildMarketPriceMetadata(marketPriceCents: number, marketPriceSource: s
   } satisfies Record<string, Json | undefined>;
 }
 
+function mergeItemMetadata(
+  existingMetadata: Json | null | undefined,
+  marketPriceCents: number,
+  marketPriceSource: string,
+) {
+  const nextMetadata = asObjectJson(existingMetadata);
+
+  delete nextMetadata.market_price_cents;
+  delete nextMetadata.market_price_source;
+  delete nextMetadata.market_price_updated_at;
+
+  if (marketPriceCents > 0) {
+    nextMetadata.market_price_cents = marketPriceCents;
+  }
+
+  if (marketPriceSource) {
+    nextMetadata.market_price_source = marketPriceSource;
+  }
+
+  if (marketPriceCents > 0 || marketPriceSource) {
+    nextMetadata.market_price_updated_at = new Date().toISOString();
+  }
+
+  return nextMetadata;
+}
+
 async function getAuthedContext() {
   const supabase = await createClient();
   const {
@@ -420,6 +446,119 @@ export async function createItemAction(formData: FormData) {
   redirectWithNotice("/dashboard/inventory", notice);
 }
 
+export async function updateItemAction(formData: FormData) {
+  let notice: DashboardNoticeCode = "item-update-error";
+
+  try {
+    const { supabase, user } = await getAuthedContext();
+    const vendor = await ensureVendor(supabase, user);
+    const itemId = requireString(formData, "item_id", "Item");
+    const sku = requireString(formData, "sku", "SKU");
+    const name = requireString(formData, "name", "Item name");
+    const inventoryType = requireString(formData, "inventory_type", "Inventory type") as InventoryType;
+    const language = getString(formData, "language") || "en";
+    const marketPriceCents = parseMoneyToCents(getString(formData, "market_price"), "Market price");
+    const marketPriceSource = getString(formData, "market_price_source");
+
+    const { data: item, error: itemError } = await supabase
+      .from("items")
+      .select("id, metadata_json")
+      .eq("vendor_id", vendor.id)
+      .eq("id", itemId)
+      .maybeSingle();
+
+    if (itemError || !item) {
+      throw new Error(itemError?.message ?? "Item not found.");
+    }
+
+    const { error } = await supabase
+      .from("items")
+      .update({
+        condition: getString(formData, "condition") || null,
+        inventory_type: inventoryType,
+        language,
+        metadata_json: mergeItemMetadata(item.metadata_json, marketPriceCents, marketPriceSource),
+        name,
+        notes: getString(formData, "notes") || null,
+        rarity: getString(formData, "rarity") || null,
+        set_code: getString(formData, "set_code") || null,
+        set_name: getString(formData, "set_name") || null,
+        sku,
+      })
+      .eq("id", item.id);
+
+    if (error) {
+      notice = error.code === "23505" ? "item-exists" : "item-update-error";
+    } else {
+      notice = "item-updated";
+      revalidateDashboardViews();
+    }
+  } catch {
+    notice = "item-update-error";
+  }
+
+  redirectWithNotice("/dashboard/inventory", notice);
+}
+
+export async function archiveItemAction(formData: FormData) {
+  let notice: DashboardNoticeCode = "item-archive-error";
+
+  try {
+    const { supabase, user } = await getAuthedContext();
+    const vendor = await ensureVendor(supabase, user);
+    const itemId = requireString(formData, "item_id", "Item");
+
+    const [{ data: item, error: itemError }, { data: inventoryRow, error: inventoryError }] = await Promise.all([
+      supabase
+        .from("items")
+        .select("id, is_active")
+        .eq("vendor_id", vendor.id)
+        .eq("id", itemId)
+        .maybeSingle(),
+      supabase
+        .from("v_inventory_position")
+        .select("on_hand_quantity, reserved_quantity")
+        .eq("vendor_id", vendor.id)
+        .eq("item_id", itemId)
+        .maybeSingle(),
+    ]);
+
+    if (itemError || !item) {
+      throw new Error(itemError?.message ?? "Item not found.");
+    }
+
+    if (inventoryError) {
+      throw new Error(inventoryError.message);
+    }
+
+    const onHandQuantity = Number(inventoryRow?.on_hand_quantity ?? 0);
+    const reservedQuantity = Number(inventoryRow?.reserved_quantity ?? 0);
+
+    if (onHandQuantity > 0 || reservedQuantity > 0) {
+      notice = "item-has-stock";
+    } else {
+      const { error } = await supabase
+        .from("items")
+        .update({
+          current_status: "archived",
+          is_active: false,
+        })
+        .eq("id", item.id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      notice = "item-archived";
+      revalidateDashboardViews();
+    }
+  } catch {
+    notice = "item-archive-error";
+  }
+
+  redirectWithNotice("/dashboard/inventory", notice);
+}
+
 export async function updateMarketBenchmarkAction(formData: FormData) {
   let notice: DashboardNoticeCode = "market-price-error";
 
@@ -579,7 +718,7 @@ export async function recordPurchaseAction(formData: FormData) {
     notice = "purchase-error";
   }
 
-  redirectWithNotice("/dashboard/transactions", notice);
+  redirectWithNotice("/dashboard/inventory", notice);
 }
 
 export async function recordSaleAction(formData: FormData) {

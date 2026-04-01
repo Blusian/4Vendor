@@ -230,8 +230,11 @@ export async function loadDashboardData(
   ] = await Promise.all([
     supabase
       .from("items")
-      .select("id, sku, name, set_name, inventory_type, rarity, condition, language, created_at, metadata_json")
-      .order("created_at", { ascending: false })
+      .select(
+        "id, sku, name, set_name, set_code, inventory_type, rarity, condition, language, notes, is_active, current_status, created_at, metadata_json",
+      )
+      .order("is_active", { ascending: false })
+      .order("name", { ascending: true })
       .limit(itemLimit),
     supabase
       .from("channels")
