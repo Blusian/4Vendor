@@ -143,7 +143,7 @@ export default async function DashboardOverviewPage({
           ) : (
             <div className={styles.emptyState}>
               <strong>No inventory yet</strong>
-              <p>Record a purchase or load demo data to create FIFO lots and inventory movement history.</p>
+              <p>Create an item in Setup, then record a purchase to create FIFO lots and inventory movement history.</p>
             </div>
           )}
         </article>

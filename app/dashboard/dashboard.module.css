@@ -406,40 +406,23 @@
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
 }
 
-.inventoryList,
-.inventoryItemCard,
-.inventoryItemSummary,
-.inventoryEditor,
-.inventoryMetricGrid,
-.inventoryActionRow,
 .inventoryFormFooter,
-.quickSearchRow {
+.quickSearchRow,
+.marketTypeRow,
+.marketPriceRow,
+.inventoryTableActions,
+.inventoryMetaStack,
+.marketResultSummary {
   display: grid;
 }
 
-.inventoryList,
-.inventoryItemCard,
-.inventoryEditor,
-.quickSearchRow {
+.quickSearchRow,
+.marketTypeRow,
+.marketPriceRow,
+.inventoryTableActions,
+.inventoryMetaStack,
+.marketResultSummary {
   gap: 1rem;
-}
-
-.inventoryItemCard {
-  padding: 1.15rem;
-  border-radius: 24px;
-  background: linear-gradient(180deg, rgba(248, 250, 251, 0.98), rgba(255, 255, 255, 0.96));
-  border: 1px solid rgba(18, 38, 46, 0.08);
-}
-
-.inventoryItemHeader {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-}
-
-.inventoryItemSummary {
-  gap: 0.45rem;
 }
 
 .inventoryTitleRow {
@@ -449,25 +432,20 @@
   flex-wrap: wrap;
 }
 
-.inventoryNote,
 .helperText {
   color: var(--ink-soft);
   line-height: 1.6;
 }
 
-.inventoryMetricGrid {
-  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
-  gap: 0.55rem;
-  min-width: min(100%, 420px);
-}
-
 .metricBadge,
-.quickSearchChip {
+.quickSearchChip,
+.marketTypeChip,
+.marketTypeChipActive {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  padding: 0.7rem 0.9rem;
+  padding: 0.68rem 0.9rem;
   border-radius: 999px;
   border: 1px solid rgba(18, 38, 46, 0.1);
   background: rgba(255, 255, 255, 0.94);
@@ -476,14 +454,39 @@
   box-shadow: 0 8px 18px rgba(16, 38, 46, 0.08);
 }
 
-.inventoryActionRow {
-  grid-template-columns: repeat(auto-fit, minmax(180px, max-content));
+.marketTypeRow {
+  grid-template-columns: repeat(3, minmax(0, max-content));
   gap: 0.75rem;
-  align-items: start;
 }
 
-.inventoryEditor {
-  min-width: min(100%, 760px);
+.marketTypeChip,
+.marketTypeChipActive,
+.quickSearchChip {
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.marketTypeChipActive {
+  color: #eff8fb;
+  background: linear-gradient(135deg, #183846, #234958);
+  box-shadow: 0 12px 24px rgba(16, 38, 46, 0.16);
+}
+
+.quickSearchChip:hover,
+.marketTypeChip:hover,
+.marketTypeChipActive:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(16, 38, 46, 0.12);
+}
+
+.inlineActionForm {
+  display: flex;
+}
+
+.compactButton {
+  padding: 0.55rem 0.82rem;
+  font-size: 0.84rem;
+  box-shadow: 0 8px 16px rgba(16, 38, 46, 0.08);
 }
 
 .inlineSummaryButton {
@@ -492,19 +495,6 @@
 
 .inlineSummaryButton::-webkit-details-marker {
   display: none;
-}
-
-.inventoryEditor[open] form {
-  display: grid;
-  gap: 0.9rem;
-  padding: 1rem;
-  border-radius: 22px;
-  border: 1px solid rgba(18, 38, 46, 0.08);
-  background: rgba(255, 255, 255, 0.94);
-}
-
-.inlineActionForm {
-  display: flex;
 }
 
 .inventoryFormFooter {
@@ -518,14 +508,73 @@
   gap: 0.75rem;
 }
 
-.quickSearchChip {
-  cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease;
+.inventoryTable {
+  min-width: 1220px;
 }
 
-.quickSearchChip:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 22px rgba(16, 38, 46, 0.12);
+.inventoryTable th,
+.inventoryTable td {
+  padding: 0.72rem 0.55rem;
+  vertical-align: top;
+}
+
+.inventoryTable th {
+  white-space: nowrap;
+}
+
+.inventoryItemCell {
+  min-width: 230px;
+}
+
+.inventoryItemPrimary {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.inventoryCellNote,
+.inventoryActionHint {
+  margin-top: 0.35rem;
+  color: var(--ink-soft);
+  font-size: 0.81rem;
+  line-height: 1.5;
+}
+
+.inventoryMetaStack {
+  gap: 0.25rem;
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+}
+
+.inventoryNumericCell {
+  min-width: 98px;
+  white-space: nowrap;
+  font-size: 0.88rem;
+}
+
+.inventoryTableActions {
+  min-width: 280px;
+  gap: 0.45rem;
+}
+
+.inventoryCompactEditor[open] form {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+  padding: 0.9rem;
+  border-radius: 18px;
+  border: 1px solid rgba(18, 38, 46, 0.08);
+  background: rgba(248, 250, 251, 0.98);
+}
+
+.marketResultSummary {
+  gap: 0.35rem;
+}
+
+.marketPriceRow {
+  grid-template-columns: repeat(auto-fit, minmax(140px, max-content));
+  gap: 0.5rem;
 }
 
 .tableWrap {
@@ -662,12 +711,11 @@
     grid-template-columns: 1fr;
   }
 
-  .inventoryItemHeader,
   .inventoryFormFooter {
     grid-template-columns: 1fr;
   }
 
-  .inventoryActionRow,
+  .marketTypeRow,
   .quickSearchRow {
     grid-template-columns: 1fr;
   }

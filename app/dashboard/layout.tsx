@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { isSupabaseConfigured } from "@/utils/supabase/security";
 
-import { seedDemoWorkspace, signOutAction } from "./actions";
+import { signOutAction } from "./actions";
 import { getDashboardIdentity } from "./data";
 import styles from "./dashboard.module.css";
 import { DashboardNavLinks } from "./nav-links";
@@ -66,11 +66,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             <Link className={styles.secondaryButton} href="/">
               Landing page
             </Link>
-            <form action={seedDemoWorkspace}>
-              <button className={styles.secondaryButton} type="submit">
-                Load demo data
-              </button>
-            </form>
             <form action={signOutAction}>
               <button className={styles.primaryButton} type="submit">
                 Sign out
